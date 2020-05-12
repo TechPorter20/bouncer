@@ -9,8 +9,8 @@ Bouncer is an open source (Apache License, Version 2.0) Java network proxy. Do n
 ## DOC
 
 #### fork from ggrandes/bouncer modify:
-1. modify bouncer.sh can run in aix,modify date command
-2. modify bouncer.sh not need modify BOUNCER_HOME env
+1. modify bouncer.sh can run in AIX,modify date command
+2. modify bouncer.sh not need modify BOUNCER_HOME
 3. modify bouncer.sh can define JAVA_HOME
 
 
