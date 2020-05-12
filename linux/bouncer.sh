@@ -1,7 +1,16 @@
 #!/bin/bash
-BOUNCER_HOME=${BOUNCER_HOME:-/opt/bouncer}
+#modify
+#export JAVA_HOME=/usr/java8_64/jre   #replace system default JDK 替换系统默认JDK
+
+cd `dirname "$0"`/..
+BOUNCER_HOME=`pwd`
+
+export PATH=$PATH:$JAVA_HOME/bin
+export CLASSPATH=.:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar
+
+#BOUNCER_HOME=${BOUNCER_HOME:-/opt/bouncer}
 BOUNCER_CONF=${BOUNCER_CONF:-bouncer.conf}
-BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-64}
+BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-256}    #默认内存256M
 BOUNCER_OPTS_DEF="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -showversion -XX:+PrintCommandLineFlags -XX:-PrintFlagsFinal"
 BOUNCER_OPTS="${BOUNCER_OPTS:-${BOUNCER_OPTS_DEF}}"
 BOUNCER_CLASSPATH=$(echo $BOUNCER_HOME/lib/*.jar | tr ' ' ':')
@@ -19,7 +28,7 @@ do_keygen () {
     exit 1;
   fi
   cd "${BOUNCER_HOME}/keys/"
-  java \
+  $JAVA_HOME/bin/java \
     -cp "${BOUNCER_CLASSPATH}" \
     org.javastack.bouncer.KeyGenerator $bits $days $cn $filebase
   #chmod go-rwx "${filebase}.key"
@@ -27,14 +36,14 @@ do_keygen () {
 }
 do_run () {
   cd ${BOUNCER_HOME}
-  java -Dprogram.name=bouncer ${BOUNCER_OPTS} -Xmx${BOUNCER_MEM_MB}m \
+  $JAVA_HOME/bin/java -Dprogram.name=bouncer ${BOUNCER_OPTS} -Xmx${BOUNCER_MEM_MB}m \
     -cp "${BOUNCER_HOME}/conf/:${BOUNCER_HOME}/keys/:${BOUNCER_CLASSPATH}" \
     org.javastack.bouncer.Bouncer ${BOUNCER_CONF}
 }
 do_start () {
   cd ${BOUNCER_HOME}
-  echo "$(date --iso-8601=seconds) Starting" >> ${BOUNCER_HOME}/log/bouncer.bootstrap
-  nohup java -Dprogram.name=bouncer ${BOUNCER_OPTS} -Xmx${BOUNCER_MEM_MB}m \
+  echo "$(date +%Y-%m-%d) $(date +%H:%-M:%-S) Starting" >> ${BOUNCER_HOME}/log/bouncer.bootstrap
+  nohup $JAVA_HOME/bin/java -Dprogram.name=bouncer ${BOUNCER_OPTS} -Xmx${BOUNCER_MEM_MB}m \
     -cp "${BOUNCER_HOME}/conf/:${BOUNCER_HOME}/keys/:${BOUNCER_CLASSPATH}" \
     -Dlog.stdOutFile=${BOUNCER_HOME}/log/bouncer.out \
     -Dlog.stdErrFile=${BOUNCER_HOME}/log/bouncer.err \
@@ -47,7 +56,7 @@ do_stop () {
   if [ "${PID}" = "" ]; then
     echo "Bouncer: NOT RUNNING"
   else
-    echo "$(date --iso-8601=seconds) Killing: ${PID}" >> ${BOUNCER_HOME}/log/bouncer.bootstrap
+    echo "$(date +%Y-%m-%d) $(date +%H:%-M:%-S) Killing: ${PID}" >> ${BOUNCER_HOME}/log/bouncer.bootstrap
     echo -n "Bouncer: KILLING [${PID}]"
     kill -TERM ${PID}
     echo -n "["
