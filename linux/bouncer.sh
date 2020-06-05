@@ -1,6 +1,13 @@
 #!/bin/bash
-#modify
-#export JAVA_HOME=/usr/java8_64/jre   #replace system default JDK 替换系统默认JDK
+#source /etc/profile
+
+# =================== Custom config start ===================
+export JAVA_HOME=/usr/java8_64/jre   #replace system default JDK 替换系统默认JDK
+
+BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-15360}    #默认内存512M
+
+# =================== Custom config end ===================
+
 
 cd `dirname "$0"`/..
 BOUNCER_HOME=`pwd`
@@ -10,8 +17,9 @@ export CLASSPATH=.:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar
 
 #BOUNCER_HOME=${BOUNCER_HOME:-/opt/bouncer}
 BOUNCER_CONF=${BOUNCER_CONF:-bouncer.conf}
-BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-256}    #默认内存256M
-BOUNCER_OPTS_DEF="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -showversion -XX:+PrintCommandLineFlags -XX:-PrintFlagsFinal"
+
+#修改Garbage Collection垃圾回收器  -XX:+UseG1GC -XX:MaxGCPauseMillis=200    默认 内存10G 无使用 引发2020-05-13T18:48:15.424+0800: 11431.492: [GC (Allocation Failure) [PSYoungGen: 513536K->85481K(599040K)] 513536K->97369K(1968640K), 0.5781144 secs] [Times: user=6.35 sys=0.00, real=0.58 secs]
+BOUNCER_OPTS_DEF="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -showversion -XX:+PrintCommandLineFlags -XX:-PrintFlagsFinal -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 BOUNCER_OPTS="${BOUNCER_OPTS:-${BOUNCER_OPTS_DEF}}"
 BOUNCER_CLASSPATH=$(echo $BOUNCER_HOME/lib/*.jar | tr ' ' ':')
 #
@@ -49,7 +57,17 @@ do_start () {
     -Dlog.stdErrFile=${BOUNCER_HOME}/log/bouncer.err \
     org.javastack.bouncer.Bouncer ${BOUNCER_CONF} 1>>${BOUNCER_HOME}/log/bouncer.bootstrap 2>&1 &
   PID="$!"
-  echo "Bouncer: STARTED [${PID}]"
+ # echo "Bouncer: STARTED [${PID}]"
+  
+sleep 3
+pid=`ps -ef | grep $BOUNCER_HOME'/lib/bouncer-' | grep -v grep | awk '{print $2}'`
+if [ "$pid" ] ;then
+ echo 'Bouncer start success'
+else
+ echo 'Bouncer start failed'
+fi
+
+
 }
 do_stop () {
   PID="$(ps axwww | grep "program.name=bouncer" | grep -v grep | while read _pid _r; do echo ${_pid}; done)"
