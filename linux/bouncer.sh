@@ -2,9 +2,9 @@
 #source /etc/profile
 
 # =================== Custom config start ===================
-export JAVA_HOME=/usr/java8_64/jre   #replace system default JDK 替换系统默认JDK
+#export JAVA_HOME=/usr/java8_64/jre   #replace system default JDK 替换系统默认JDK
 
-BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-15360}    #默认内存512M
+BOUNCER_MEM_MB=${BOUNCER_MEM_MB:-512}    #默认内存512M
 
 # =================== Custom config end ===================
 
